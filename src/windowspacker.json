@@ -1,0 +1,50 @@
+{
+    "variables": {
+      "client_id": "{{env `ARM_CLIENT_ID`}}",
+      "client_secret": "{{env `ARM_CLIENT_SECRET`}}",
+      "subscription_id": "{{env `ARM_SUBSCRIPTION_ID`}}",
+	    "tenant_id": "{{env `ARM_TENANT_ID`}}"
+    },
+    "builders": [{
+      "type": "azure-arm",
+  
+	   "client_id": "{{user `client_id`}}",
+	   "client_secret": "{{user `client_secret`}}",
+       "subscription_id": "{{user `subscription_id`}}",
+	   "tenant_id": "{{user `tenant_id`}}",
+ 
+      "managed_image_resource_group_name": "packer",
+      "managed_image_name": "RDevOpsWindowsImage",
+  
+      "os_type": "Windows",
+      "image_publisher": "MicrosoftWindowsServer",
+      "image_offer": "WindowsServer",
+      "image_sku": "2019-Datacenter",
+  
+      "communicator": "winrm",
+      "winrm_use_ssl": "true",
+      "winrm_insecure": "true",
+      "winrm_timeout": "3m",
+      "winrm_username": "packer",
+  
+      "location": "West Europe"
+    }],
+    "provisioners": [{
+      "type": "powershell",
+        "inline": [
+		
+          "Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))",
+          
+          "choco install terraform -y",
+          "choco install inspec -y"
+      ]
+    },
+	{
+            "type": "windows-restart"
+    },
+	{
+            "type": "powershell",
+            "script": "./scripts/sysprep.ps1"
+     }	  
+	  ]
+  }
